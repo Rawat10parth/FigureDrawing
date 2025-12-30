@@ -34,7 +34,7 @@ class QuickPoseApp:
         self.canvas.pack(fill="both", expand=True)
         self.canvas.bind("<Configure>", lambda e: self.show())
 
-        # ===== Overlay Frame (Timer + Counter) =====
+        # ===== Overlay (Timer + Counter) =====
         overlay = tk.Frame(root, bg=BG)
         overlay.pack(fill="x", pady=4)
 
@@ -85,7 +85,7 @@ class QuickPoseApp:
 
         self.big_btn(bottom, "▶ Start", self.start).grid(row=0, column=2, padx=8)
 
-        # ===== Load last folder =====
+        # ===== Load last folder (no auto start) =====
         if os.path.isdir(self.settings["last_folder"]):
             self.load_images(self.settings["last_folder"])
 
@@ -122,7 +122,7 @@ class QuickPoseApp:
         with open(SETTINGS_FILE, "w") as f:
             json.dump(self.settings, f, indent=4)
 
-    # ===== Folder =====
+    # ===== Folder Picker =====
     def load_folder(self):
         folder = filedialog.askdirectory()
         if not folder:
@@ -131,12 +131,15 @@ class QuickPoseApp:
         self.save_settings()
         self.load_images(folder)
 
+    # ===== RECURSIVE IMAGE LOADING =====
     def load_images(self, folder):
-        self.images = [
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.lower().endswith(("jpg", "jpeg", "png"))
-        ]
+        self.images = []
+
+        for root, _, files in os.walk(folder):
+            for file in files:
+                if file.lower().endswith(("jpg", "jpeg", "png")):
+                    self.images.append(os.path.join(root, file))
+
         if not self.images:
             return
 
